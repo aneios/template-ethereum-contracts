@@ -1,5 +1,4 @@
-#!/usr/bin/env node
-import {existsSync, copyFileSync} from "fs";
+import { existsSync, copyFileSync } from "fs";
 function copyFromDefault(p: string) {
 	if (!existsSync(p)) {
 		const defaultFile = p + ".default";
