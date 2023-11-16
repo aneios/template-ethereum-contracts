@@ -1,5 +1,5 @@
-import {BaseContract} from 'ethers';
-import {ethers} from 'hardhat';
+import {BaseContract} from "ethers";
+import {ethers} from "hardhat";
 
 export async function setupUsers<T extends {[contractName: string]: BaseContract}>(
 	addresses: string[],

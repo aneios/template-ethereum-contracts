@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-1.0
 
-pragma solidity 0.8.17;
+pragma solidity 0.8.22;
 
 interface IERC2612Standalone {
 	function permit(

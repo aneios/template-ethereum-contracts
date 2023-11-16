@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-1.0
-pragma solidity 0.8.17;
+pragma solidity 0.8.22;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
@@ -64,13 +64,19 @@ abstract contract ERC20Base is IERC20, ERC20Internal {
 		return true;
 	}
 
-	function transferAlongWithETH(address payable to, uint256 amount) external payable returns (bool) {
+	function transferAlongWithETH(
+		address payable to,
+		uint256 amount
+	) external payable returns (bool) {
 		_transfer(msg.sender, to, amount);
 		to.transfer(msg.value);
 		return true;
 	}
 
-	function distributeAlongWithETH(address payable[] memory tos, uint256 totalAmount) external payable returns (bool) {
+	function distributeAlongWithETH(
+		address payable[] memory tos,
+		uint256 totalAmount
+	) external payable returns (bool) {
 		uint256 val = msg.value / tos.length;
 		require(msg.value == val * tos.length, "INVALID_MSG_VALUE");
 		uint256 amount = totalAmount / tos.length;
@@ -82,7 +88,11 @@ abstract contract ERC20Base is IERC20, ERC20Internal {
 		return true;
 	}
 
-	function transferAndCall(address to, uint256 amount, bytes calldata data) external returns (bool) {
+	function transferAndCall(
+		address to,
+		uint256 amount,
+		bytes calldata data
+	) external returns (bool) {
 		_transfer(msg.sender, to, amount);
 		return ITransferReceiver(to).onTokenTransfer(msg.sender, amount, data);
 	}
@@ -107,7 +117,11 @@ abstract contract ERC20Base is IERC20, ERC20Internal {
 		return IPaidForReceiver(to).onTokenPaidFor(msg.sender, forAddress, amount, data);
 	}
 
-	function transferFrom(address from, address to, uint256 amount) external override returns (bool) {
+	function transferFrom(
+		address from,
+		address to,
+		uint256 amount
+	) external override returns (bool) {
 		_transferFrom(from, to, amount);
 		return true;
 	}
@@ -117,7 +131,11 @@ abstract contract ERC20Base is IERC20, ERC20Internal {
 		return true;
 	}
 
-	function approveAndCall(address spender, uint256 amount, bytes calldata data) external returns (bool) {
+	function approveAndCall(
+		address spender,
+		uint256 amount,
+		bytes calldata data
+	) external returns (bool) {
 		_approveFor(msg.sender, spender, amount);
 		return IApprovalReceiver(spender).onTokenApproval(msg.sender, amount, data);
 	}
