@@ -7,7 +7,7 @@
 		"@typechain/hardhat": "^9.1.0",
 		"@types/chai": "^4.3.10",
 		"@types/mocha": "^10.0.4",
-		"@types/node": "^20.9.0",
+		"@types/node": "^20.9.1",
 		"chai": "^4.3.10",
 		"dotenv": "^16.3.1",
 		"ethers": "^6.8.1",
@@ -25,6 +25,11 @@
 		"typescript": "^5.2.2"
 	},
 	"name": "mycontracts",
+	"pnpm": {
+		"overrides": {
+			"mocha": "$mocha"
+		}
+	},
 	"scripts": {
 		"compile": "hardhat compile",
 		"coverage": "HARDHAT_DEPLOY_FIXTURE=true hardhat coverage",
