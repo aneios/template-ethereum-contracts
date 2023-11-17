@@ -1,8 +1,8 @@
 // script used to fund account from a geth coinbase account (geth --dev)
-import {ethers, network} from "hardhat";
-import {BigNumber, providers} from "ethers";
+import { ethers, network } from "hardhat";
+import { BigNumber, providers } from "ethers";
 
-const {JsonRpcProvider} = providers;
+const { JsonRpcProvider } = providers;
 
 function wait(numSec: number): Promise<void> {
 	return new Promise<void>((resolve) => {
@@ -17,9 +17,9 @@ async function main() {
 		try {
 			await ethers.provider.send("eth_chainId", []);
 			found = true;
-		} catch (e) {} // TODO timeout ?
+		} catch (e) { } // TODO timeout ?
 		if (!found) {
-			console.log(`retrying...`);
+			console.log("retrying...");
 			await wait(1);
 		}
 	}
@@ -59,7 +59,7 @@ async function main() {
 				value: amount.sub(21000).toHexString(),
 				nonce: BigNumber.from(nonce + i).toHexString()
 			});
-			console.log(`${to}: ${tx.hash}`);
+			console.log(to + ": " + tx.hash);
 			txs.push(tx);
 		}
 		await Promise.all(txs.map((tx) => tx.wait()));

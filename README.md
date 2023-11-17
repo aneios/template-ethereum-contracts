@@ -1,16 +1,8 @@
 # Boilerplate for ethereum solidity smart contract development
 
-## INSTALL
-
-```bash
-pnpm i
-```
-
 ## SCRIPTS
 
-Here is the list of pnpm scripts you can execute:
-
-Some of them rely on [./utils/doAction.ts](./utils/doAction.ts) to allow parameterizing via command line argument (have a look inside if you need modifications)
+Some of the following pnpm scripts rely on [utils/doAction.ts](./utils/doAction.ts) to allow parameterizing via command line argument (have a look inside if you need modifications).
 <br/><br/>
 
 ### `pnpm prepare`

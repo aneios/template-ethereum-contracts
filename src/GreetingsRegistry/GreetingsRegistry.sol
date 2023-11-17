@@ -15,8 +15,8 @@ contract GreetingsRegistry is Proxied {
 	}
 
 	constructor(string memory prefix) {
-		// the proxied modifier from `hardhat-deploy` ensure postUpgrade effect can only be used once when the contract is deployed without proxy
-		// by calling that function in the constructor we ensure the contract behave the same whether it is deployed through a proxy or not.
+		// the proxied modifier from "hardhat-deploy" ensures postUpgrade effects can only be used once when the contract is deployed without proxy
+		// by calling that function in the constructor we ensure the contract behaves the same whether it is deployed through a proxy or not.
 		postUpgrade(prefix);
 	}
 

@@ -13,10 +13,10 @@ function parseArgs(rawArgs: string[], numFixedArgs: number, expectedOptions: Map
 		const rawArg = rawArgs[i];
 		if (rawArg.startsWith("--")) {
 			const optionName = rawArg.slice(2);
-			const optionDetected = expectedOptions.get(optionName);
-			if (!alreadyCounted.get(optionName) && optionDetected) {
+			const expectedOptionDetected = expectedOptions.get(optionName);
+			if (!alreadyCounted.get(optionName) && expectedOptionDetected) {
 				alreadyCounted.set(optionName, true);
-				if (optionDetected === "boolean") {
+				if (expectedOptionDetected === "boolean") {
 					options.set(optionName, true);
 				} else {
 					i++;
@@ -62,94 +62,89 @@ async function doAction(rawArgs: string[]) {
 	const firstArg = rawArgs[0];
 	const args = rawArgs.slice(1);
 	if (firstArg === "run") {
-		const { fixedArgs, extra } = parseArgs(args, 2, {});
-		let filepath = fixedArgs[1];
+		const { fixedArgs, extra } = parseArgs(args, 2, new Map());
 		const folder = basename(__dirname);
-		if (filepath.startsWith(folder + "/") || filepath.startsWith(folder + "\\")) {
-			filepath = filepath.slice(folder.length + 1);
-		}
-		await execute(
-			`cross-env HARDHAT_DEPLOY_LOG=true HARDHAT_NETWORK=${fixedArgs[0]
-			} ts-node --files ${filepath} ${extra.join(" ")}`
+		const filePath = fixedArgs[1].startsWith(folder + "/") ? fixedArgs[1].slice(folder.length + 1) : fixedArgs[1];
+		await execute("HARDHAT_DEPLOY_LOG=true HARDHAT_NETWORK=" + fixedArgs[0] +
+			" ts-node --files " + filePath + " " + extra.join(" ")
 		);
 	} else if (firstArg === "deploy") {
-		const { fixedArgs, extra } = parseArgs(args, 1, {});
-		await execute(`hardhat --network ${fixedArgs[0]} deploy --report-gas ${extra.join(" ")}`);
+		const { fixedArgs, extra } = parseArgs(args, 1, new Map());
+		await execute("hardhat --network " + fixedArgs[0] + " deploy --report-gas " + extra.join(" "));
 	} else if (firstArg === "verify") {
-		const { fixedArgs, extra } = parseArgs(args, 1, {});
+		const { fixedArgs, extra } = parseArgs(args, 1, new Map());
 		const network = fixedArgs[0];
 		if (!network) {
-			console.error(`need to specify the network as first argument`);
+			console.error("need to specify the network as first argument");
 			return;
 		}
-		await execute(`hardhat --network ${network} etherscan-verify ${extra.join(" ")}`);
+		await execute("hardhat --network " + network + " etherscan-verify " + extra.join(" "));
 	} else if (firstArg === "export") {
-		const { fixedArgs } = parseArgs(args, 2, {});
-		await execute(`hardhat --network ${fixedArgs[0]} export --export ${fixedArgs[1]}`);
+		const { fixedArgs } = parseArgs(args, 2, new Map());
+		await execute("hardhat --network " + fixedArgs[0] + " export --export " + fixedArgs[1]);
 	} else if (firstArg === "fork:run") {
-		const { fixedArgs, options, extra } = parseArgs(args, 2, {
-			"deploy": "boolean",
-			"blockNumber": "string",
-			"no-impersonation": "boolean"
-		});
-		let filepath = fixedArgs[1];
+		const { fixedArgs, options, extra } = parseArgs(args, 2, new Map([
+			["deploy", "boolean"],
+			["blockNumber", "string"],
+			["no-impersonation", "boolean"]
+		]));
 		const folder = basename(__dirname);
-		if (filepath.startsWith(folder + "/") || filepath.startsWith(folder + "\\")) {
-			filepath = filepath.slice(folder.length + 1);
-		}
-		await execute(
-			`cross-env ${options.deploy ? "HARDHAT_DEPLOY_FIXTURE=true" : ""
-			} HARDHAT_DEPLOY_LOG=true HARDHAT_FORK=${fixedArgs[0]} ${options.blockNumber ? `HARDHAT_FORK_NUMBER=${options.blockNumber}` : ""
-			} ${options["no-impersonation"] ? `HARDHAT_DEPLOY_NO_IMPERSONATION=true` : ""
-			} ts-node --files ${filepath} ${extra.join(" ")}`
+		const filePath = fixedArgs[1].startsWith(folder + "/") ? fixedArgs[1].slice(folder.length + 1) : fixedArgs[1];
+		const deploy = options.get("deploy") ? "HARDHAT_DEPLOY_FIXTURE=true" : "";
+		const blockNumber = options.get("blockNumber") ? " HARDHAT_FORK_NUMBER=" + options.get("blockNumber") : "";
+		const noImpersonation = options.get("no-impersonation") ? " HARDHAT_DEPLOY_NO_IMPERSONATION=true" : "";
+
+		await execute(deploy + " HARDHAT_DEPLOY_LOG=true HARDHAT_FORK=" + fixedArgs[0] +
+			blockNumber + noImpersonation +
+			" ts-node --files " + filePath + " " + extra.join(" ")
 		);
 	} else if (firstArg === "fork:deploy") {
-		const { fixedArgs, options, extra } = parseArgs(args, 1, {
-			"blockNumber": "string",
-			"no-impersonation": "boolean"
-		});
-		await execute(
-			`cross-env HARDHAT_FORK=${fixedArgs[0]} ${options.blockNumber ? `HARDHAT_FORK_NUMBER=${options.blockNumber}` : ""
-			} ${options["no-impersonation"] ? `HARDHAT_DEPLOY_NO_IMPERSONATION=true` : ""
-			} hardhat deploy --report-gas ${extra.join(" ")}`
+		const { fixedArgs, options, extra } = parseArgs(args, 1, new Map([
+			["blockNumber", "string"],
+			["no-impersonation", "boolean"]
+		]));
+		const blockNumber = options.get("blockNumber") ? " HARDHAT_FORK_NUMBER=" + options.get("blockNumber") : "";
+		const noImpersonation = options.get("no-impersonation") ? " HARDHAT_DEPLOY_NO_IMPERSONATION=true" : "";
+		await execute("HARDHAT_FORK=" + fixedArgs[0] +
+			blockNumber + noImpersonation +
+			" hardhat deploy --report-gas " + extra.join(" ")
 		);
 	} else if (firstArg === "fork:node") {
-		const { fixedArgs, options, extra } = parseArgs(args, 1, {
-			"blockNumber": "string",
-			"no-impersonation": "boolean"
-		});
-		await execute(
-			`cross-env HARDHAT_FORK=${fixedArgs[0]} ${options.blockNumber ? `HARDHAT_FORK_NUMBER=${options.blockNumber}` : ""
-			} ${options["no-impersonation"] ? `HARDHAT_DEPLOY_NO_IMPERSONATION=true` : ""
-			} hardhat node --hostname 0.0.0.0 ${extra.join(" ")}`
+		const { fixedArgs, options, extra } = parseArgs(args, 1, new Map([
+			["blockNumber", "string"],
+			["no-impersonation", "boolean"]
+		]));
+		const blockNumber = options.get("blockNumber") ? " HARDHAT_FORK_NUMBER=" + options.get("blockNumber") : "";
+		const noImpersonation = options.get("no-impersonation") ? " HARDHAT_DEPLOY_NO_IMPERSONATION=true" : "";
+		await execute("HARDHAT_FORK=" + fixedArgs[0] +
+			blockNumber + noImpersonation +
+			" hardhat node --hostname 0.0.0.0 " + extra.join(" ")
 		);
 	} else if (firstArg === "fork:test") {
-		const { fixedArgs, options, extra } = parseArgs(args, 1, {
-			"blockNumber": "string",
-			"no-impersonation": "boolean"
-		});
-		await execute(
-			`cross-env HARDHAT_FORK=${fixedArgs[0]} ${options.blockNumber ? `HARDHAT_FORK_NUMBER=${options.blockNumber}` : ""
-			} ${options["no-impersonation"] ? `HARDHAT_DEPLOY_NO_IMPERSONATION=true` : ""
-			} HARDHAT_DEPLOY_FIXTURE=true HARDHAT_COMPILE=true mocha --bail --recursive test ${extra.join(
-				" "
-			)}`
+		const { fixedArgs, options, extra } = parseArgs(args, 1, new Map([
+			["blockNumber", "string"],
+			["no-impersonation", "boolean"]
+		]));
+		const blockNumber = options.get("blockNumber") ? " HARDHAT_FORK_NUMBER=" + options.get("blockNumber") : "";
+		const noImpersonation = options.get("no-impersonation") ? " HARDHAT_DEPLOY_NO_IMPERSONATION=true" : "";
+		await execute("HARDHAT_DEPLOY_FIXTURE=true HARDHAT_FORK=" + fixedArgs[0] +
+			blockNumber + noImpersonation +
+			" HARDHAT_COMPILE=true mocha --bail --recursive test " + extra.join(" ")
 		);
 	} else if (firstArg === "fork:dev") {
-		const { fixedArgs, options, extra } = parseArgs(args, 1, {
-			"blockNumber": "string",
-			"no-impersonation": "boolean"
-		});
-		await execute(
-			`cross-env HARDHAT_FORK=${fixedArgs[0]} ${options.blockNumber ? `HARDHAT_FORK_NUMBER=${options.blockNumber}` : ""
-			} ${options["no-impersonation"] ? `HARDHAT_DEPLOY_NO_IMPERSONATION=true` : ""
-			} hardhat node --hostname 0.0.0.0 --watch --export contractsInfo.json ${extra.join(
-				" "
-			)}`
+		const { fixedArgs, options, extra } = parseArgs(args, 1, new Map([
+			["blockNumber", "string"],
+			["no-impersonation", "boolean"]
+		]));
+		const blockNumber = options.get("blockNumber") ? " HARDHAT_FORK_NUMBER=" + options.get("blockNumber") : "";
+		const noImpersonation = options.get("no-impersonation") ? " HARDHAT_DEPLOY_NO_IMPERSONATION=true" : "";
+		await execute("HARDHAT_FORK=" + fixedArgs[0] +
+			blockNumber + noImpersonation +
+			" hardhat node --hostname 0.0.0.0 --watch --export contractsInfo.json " + extra.join(" ")
 		);
 	} else if (firstArg === "tenderly:push") {
-		const { fixedArgs } = parseArgs(args, 1, {});
-		await execute(`hardhat --network ${fixedArgs[0]} tenderly:push`);
+		const { fixedArgs } = parseArgs(args, 1, new Map());
+		await execute("hardhat --network " + fixedArgs[0] + " tenderly:push");
 	}
 }
 

@@ -1,5 +1,5 @@
-import {deployments, getUnnamedAccounts} from "hardhat";
-const {execute} = deployments;
+import { deployments, getUnnamedAccounts } from "hardhat";
+const { execute } = deployments;
 // example script
 
 const args = process.argv.slice(2);
@@ -13,7 +13,7 @@ async function main() {
 
 	await execute(
 		"GreetingsRegistry",
-		{from: accountAddress, log: true},
+		{ from: accountAddress, log: true },
 		"setMessage",
 		message || "hello"
 	);
